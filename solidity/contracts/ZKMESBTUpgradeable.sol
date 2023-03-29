@@ -1,0 +1,214 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
+
+import "./KycData/KYCDataLib.sol";
+import "./KycData/IKYCDataReadable.sol";
+import "./interfaces/IERC721MetadataUpgradeable.sol";
+
+import "@openzeppelin/contracts-upgradeable/interfaces/IERC165Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/interfaces/IERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableMapUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
+/**
+ * An experiment in zkMe Soul Bound Tokens (ZKMESBT's)
+ */
+contract ZKMESBTUpgradeable is
+    Initializable,
+    AccessControlUpgradeable,
+    IKYCDataReadable,
+    IERC721MetadataUpgradeable
+{
+    using StringsUpgradeable for uint256;
+    using CountersUpgradeable for CountersUpgradeable.Counter;
+    using EnumerableMapUpgradeable for EnumerableMapUpgradeable.AddressToUintMap;
+    using EnumerableMapUpgradeable for EnumerableMapUpgradeable.UintToAddressMap;
+
+    EnumerableMapUpgradeable.UintToAddressMap private _ownerMap;
+    EnumerableMapUpgradeable.AddressToUintMap private _tokenMap;
+
+    CountersUpgradeable.Counter private _tokenId;
+
+    string public name;
+    string public symbol;
+    string private _baseTokenURI;
+
+    mapping(uint => KYCDataLib.UserData) private _kycMap;
+
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
+
+    /**
+     * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
+     */
+    function initialize(
+        string memory name_,
+        string memory symbol_,
+        address admin_
+    ) public reinitializer(1) {
+        name = name_;
+        symbol = symbol_;
+
+        _grantRole(DEFAULT_ADMIN_ROLE, admin_);
+        _grantRole(OPERATOR_ROLE, admin_);
+    }
+
+    function attest(
+        address to
+    ) external onlyRole(OPERATOR_ROLE) returns (uint256) {
+        require(to != address(0), "Empty address is not allowed");
+        require(!_tokenMap.contains(to), "zkMeSBT already exists");
+
+        _tokenId.increment();
+        uint256 tokenId = _tokenId.current();
+
+        _tokenMap.set(to, tokenId);
+        _ownerMap.set(tokenId, to);
+
+        emit Attest(to, tokenId);
+        emit Transfer(address(0), to, tokenId);
+
+        return tokenId;
+    }
+
+    function revoke(
+        address from,
+        uint256 tokenId
+    ) external onlyRole(OPERATOR_ROLE) {
+        require(from != address(0), "Empty address is not allowed");
+        require(
+            _tokenMap.contains(from),
+            "The account does not have the zkMeSBT"
+        );
+
+        _tokenMap.remove(from);
+        _ownerMap.remove(tokenId);
+
+        emit Revoke(from, tokenId);
+        emit Transfer(from, address(0), tokenId);
+    }
+
+    function burn(uint256 tokenId) external {
+        address sender = _msgSender();
+
+        require(
+            _tokenMap.contains(sender),
+            "The account does not have the zkMeSBT"
+        );
+
+        _tokenMap.remove(sender);
+        _ownerMap.remove(tokenId);
+
+        emit Burn(sender, tokenId);
+        emit Transfer(sender, address(0), tokenId);
+    }
+
+    function getKycData(
+        uint256 tokenId
+    ) public view returns (KYCDataLib.UserData memory) {
+        require(_ownerMap.contains(tokenId), "The zkMeSBT does not exist");
+
+        return _kycMap[tokenId];
+    }
+
+    function setKycData(
+        uint256 tokenId,
+        string calldata key,
+        uint256 validity,
+        string calldata data,
+        string[] calldata questions
+    ) public onlyRole(OPERATOR_ROLE) {
+        require(_ownerMap.contains(tokenId), "The zkMeSBT does not exist");
+        require(
+            validity > block.timestamp,
+            "The expiration date is too closed"
+        );
+        if (bytes(_kycMap[tokenId].key).length != 0) {
+            require(
+                keccak256(bytes(_kycMap[tokenId].key)) == keccak256(bytes(key)),
+                "Dismatched user key"
+            );
+        }
+
+        _setKycData(tokenId, key, validity, data, questions);
+    }
+
+    function _setKycData(
+        uint256 tokenId,
+        string calldata key,
+        uint256 validity,
+        string calldata data,
+        string[] calldata questions
+    ) internal {
+        _kycMap[tokenId] = KYCDataLib.UserData(key, validity, data, questions);
+    }
+
+    /**
+     * @dev Update _baseTokenURI
+     */
+    function setBaseTokenURI(
+        string calldata uri
+    ) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        _baseTokenURI = uri;
+    }
+
+    function balanceOf(
+        address owner
+    ) external view override(IZKMESBT721Upgradeable) returns (uint256) {
+        (bool success, ) = _tokenMap.tryGet(owner);
+        return success ? 1 : 0;
+    }
+
+    function tokenIdOf(address from) external view returns (uint256) {
+        return _tokenMap.get(from, "The address does not have any zkMeSBT");
+    }
+
+    function ownerOf(
+        uint256 tokenId
+    ) external view override(IZKMESBT721Upgradeable) returns (address) {
+        return _ownerMap.get(tokenId, "Invalid tokenId");
+    }
+
+    function totalSupply() external view override returns (uint256) {
+        return _tokenId.current();
+    }
+
+    function isOperator(address account) external view returns (bool) {
+        return hasRole(OPERATOR_ROLE, account);
+    }
+
+    function isAdmin(address account) external view returns (bool) {
+        return hasRole(DEFAULT_ADMIN_ROLE, account);
+    }
+
+    /**
+     * @dev See {IERC721Metadata-tokenURI}.
+     *
+     */
+    function tokenURI(uint256 tokenId) external view returns (string memory) {
+        return
+            bytes(_baseTokenURI).length > 0
+                ? string(abi.encodePacked(_baseTokenURI, tokenId.toString()))
+                : "";
+    }
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(
+        bytes4 interfaceId
+    )
+        public
+        view
+        virtual
+        override(AccessControlUpgradeable, IERC165Upgradeable)
+        returns (bool)
+    {
+        return
+            interfaceId == type(IERC721Upgradeable).interfaceId ||
+            interfaceId == type(IERC721MetadataUpgradeable).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
+}
