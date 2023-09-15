@@ -1,0 +1,44 @@
+{
+  "name": "soulbound-token-demo",
+  "version": "1.0.0",
+  "description": "1.Compiler Version: v0.8.9+commit.e5eed63a    2.Optimization Enabled: No with 200 runs    3.Other Settings: default evmVersion    4.Main Contract Name: SBT.sol",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "hardhat compile",
+    "deploy": "hardhat run --network localhost scripts/deploy.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.bitkinetic.com:zkme/soulbound-token-demo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.4",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.7",
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "@nomiclabs/hardhat-ethers": "^2.2.1",
+    "@nomiclabs/hardhat-etherscan": "^3.1.6",
+    "@openzeppelin/hardhat-upgrades": "^1.21.0",
+    "@typechain/ethers-v5": "^10.1.1",
+    "@typechain/hardhat": "^6.1.4",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.11.9",
+    "chai": "^4.3.7",
+    "dotenv": "^16.0.3",
+    "ethers": "^5.7.2",
+    "ethers-utils": "^2.1.11",
+    "hardhat": "^2.12.2",
+    "hardhat-gas-reporter": "^1.0.9",
+    "solidity-coverage": "^0.8.2",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.1.1",
+    "typescript": "^4.9.3"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts-upgradeable": "^4.8.0"
+  }
+}

@@ -1,0 +1,10 @@
+node_modules/
+artifacts/
+typechain-types/
+cache/
+target/
+.openzeppelin/
+.env
+.idea
+.DS_Store
+.vscode
