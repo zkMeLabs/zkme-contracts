@@ -41,7 +41,9 @@ contract ZKMEVerifyUpgradeable is
         address sbt_contract_,
         address conf_contract_
     ) public reinitializer(1) {
+        require(sbt_contract_ != address(0),"sbt_contract_ can not be 0");
         _sbt_contract = sbt_contract_;
+        require(conf_contract_ != address(0),"conf_contract_ can not be 0");
         _conf_contract = conf_contract_;
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin_);
@@ -52,12 +54,14 @@ contract ZKMEVerifyUpgradeable is
     function updateSbtContract(
         address contract_
     ) external onlyRole(OPERATOR_ROLE) {
+        require(contract_ != address(0),"contract_ can not be 0");
         _sbt_contract = contract_;
     }
 
     function updateConfContract(
         address contract_
     ) external onlyRole(OPERATOR_ROLE) {
+        require(contract_ != address(0),"contract_ can not be 0");
         _conf_contract = contract_;
     }
 
@@ -113,12 +117,14 @@ contract ZKMEVerifyUpgradeable is
             .getKycData(tokenId);
         userData.key = cooperatorThresholdKey;
         _kycDataMap[cooperator][tokenId] = userData;
-        _approveMap[cooperator].add(tokenId);
+        bool approveAdd = _approveMap[cooperator].add(tokenId);
+        require(approveAdd, "approveAdd error");
         _puMap[cooperator][tokenOwner] = tokenId;
 
         emit Approve(cooperator, tokenId);
     }
 
+    // we do not delete and remove data right here, since we need store data for 5 years and delete them manually
     function revoke(address cooperator, uint256 tokenId) external {
         require(
             IZKMESBT721Upgradeable(_sbt_contract).ownerOf(tokenId) ==
@@ -127,7 +133,8 @@ contract ZKMEVerifyUpgradeable is
             "The invoker does not have the sbt"
         );
 
-        _approveMap[cooperator].remove(tokenId);
+        bool approveRemove = _approveMap[cooperator].remove(tokenId);
+        require(approveRemove, "approveRemove error");
 
         emit Revoke(cooperator, tokenId);
     }
@@ -311,5 +318,15 @@ contract ZKMEVerifyUpgradeable is
         }
 
         return tokenIdList;
+    }
+
+    //manually remove expired data, controlled by admin
+    // if user burn their sbt and it through 5 years, we can use this function to remove rebundent data.
+    function removeExpire(address cooperator, uint256 tokenId,address user) external onlyRole(OPERATOR_ROLE){
+        require(_approveMap[cooperator].length() >0 ,"cooperator illegal");
+        require(!_approveMap[cooperator].contains(tokenId),"it is not revoked");
+        delete _kycDataMap[cooperator][tokenId];
+        require(_puMap[cooperator][user] != uint256(0),"it is not valid user");
+        delete _puMap[cooperator][user];
     }
 }

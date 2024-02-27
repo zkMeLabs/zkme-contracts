@@ -69,6 +69,7 @@ interface IZKMESBT721Upgradeable {
     function burn(uint256 tokenId) external;
 
     /**
+     * deprecated
      * @notice Count all SBTs assigned to an owner
      * @dev SBTs assigned to the zero address is considered invalid, and this
      * function throws for queries about the zero address.
@@ -76,6 +77,15 @@ interface IZKMESBT721Upgradeable {
      * @return The number of SBTs owned by `owner`, possibly zero
      */
     function balanceOf(address owner) external view returns (uint256);
+
+    /**
+     * @notice Count all SBTs assigned to an owner
+     * @dev SBTs assigned to the zero address is considered invalid, and this
+     * function throws for queries about the zero address.
+     * @param owner An address for whom to query the balance
+     * @return The number of SBTs owned by `owner`, possibly zero
+     */
+    function isMinted(address owner) external view returns (uint256);
 
     /**
      * @param from The address of the SBT owner

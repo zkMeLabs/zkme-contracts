@@ -64,8 +64,10 @@ contract ZKMESBTUpgradeable is
         _tokenId.increment();
         uint256 tokenId = _tokenId.current();
 
-        _tokenMap.set(to, tokenId);
-        _ownerMap.set(tokenId, to);
+        bool tokenSet = _tokenMap.set(to, tokenId);
+        require(tokenSet, "_tokenMap.set error");
+        bool ownerMapSet = _ownerMap.set(tokenId, to);
+        require(ownerMapSet, "_ownerMap.set error");
 
         emit Attest(to, tokenId);
         emit Transfer(address(0), to, tokenId);
@@ -83,27 +85,40 @@ contract ZKMESBTUpgradeable is
             "The account does not have the zkMeSBT"
         );
 
-        _tokenMap.remove(from);
-        _ownerMap.remove(tokenId);
+        bool tokenRemove = _tokenMap.remove(from);
+        require(tokenRemove, "_tokenMap.remove error");
+        bool ownerRemove = _ownerMap.remove(tokenId);
+        require(ownerRemove, "_ownerMap.remove error");
 
         emit Revoke(from, tokenId);
         emit Transfer(from, address(0), tokenId);
     }
 
+    // we do not delete and remove data right here, since we need store data for 5 years and delete them manually
     function burn(uint256 tokenId) external {
         address sender = _msgSender();
+        require(_ownerOf(tokenId)==sender, "The account must be owner itself");
 
         require(
             _tokenMap.contains(sender),
             "The account does not have the zkMeSBT"
         );
 
-        _tokenMap.remove(sender);
-        _ownerMap.remove(tokenId);
+        bool tokenRemove = _tokenMap.remove(sender);
+        require(tokenRemove, "_tokenMap.remove error");
+        bool ownerRemove  = _ownerMap.remove(tokenId);
+        require(ownerRemove, "_ownerMap.remove error");
 
         emit Burn(sender, tokenId);
         emit Transfer(sender, address(0), tokenId);
     }
+
+    // if user burn their sbt and it through 5 years, we can use this function to remove rebundent data.
+    function deleteExpire(uint256 tokenId) external onlyRole(OPERATOR_ROLE) {
+        require(!_ownerMap.contains(tokenId),"it is not burn");
+        delete _kycMap[tokenId];
+    }
+
 
     function getKycData(
         uint256 tokenId
@@ -154,7 +169,16 @@ contract ZKMESBTUpgradeable is
         _baseTokenURI = uri;
     }
 
+    // old version maintains, set a new function to do so
+    //deprecated
     function balanceOf(
+        address owner
+    ) external view override(IZKMESBT721Upgradeable) returns (uint256) {
+        (bool success, ) = _tokenMap.tryGet(owner);
+        return success ? 1 : 0;
+    }
+
+    function isMinted(
         address owner
     ) external view override(IZKMESBT721Upgradeable) returns (uint256) {
         (bool success, ) = _tokenMap.tryGet(owner);
@@ -168,6 +192,12 @@ contract ZKMESBTUpgradeable is
     function ownerOf(
         uint256 tokenId
     ) external view override(IZKMESBT721Upgradeable) returns (address) {
+        return _ownerMap.get(tokenId, "Invalid tokenId");
+    }
+
+    function _ownerOf(
+        uint256 tokenId
+    ) public view returns (address) {
         return _ownerMap.get(tokenId, "Invalid tokenId");
     }
 
