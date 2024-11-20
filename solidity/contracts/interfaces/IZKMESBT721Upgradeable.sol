@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import "../KycData/KYCDataLib.sol";
+
 interface IZKMESBT721Upgradeable {
     /**
      * @dev This emits when a new token is created and bound to an account by
@@ -30,6 +32,11 @@ interface IZKMESBT721Upgradeable {
         address indexed from,
         address indexed to,
         uint256 indexed tokenId
+    );
+
+
+    event MintSingleSbt(
+        address indexed to
     );
 
     /**
@@ -85,7 +92,7 @@ interface IZKMESBT721Upgradeable {
      * @param owner An address for whom to query the balance
      * @return The number of SBTs owned by `owner`, possibly zero
      */
-    function isMinted(address owner) external view returns (uint256);
+    function isBalancePass(address owner) external view returns (uint256);
 
     /**
      * @param from The address of the SBT owner
@@ -106,4 +113,11 @@ interface IZKMESBT721Upgradeable {
      * @dev Returns the amount of tokens in existence.
      */
     function totalSupply() external view returns (uint256);
+
+
+    function mintSbt(KYCDataLib.MintData[] calldata mintDataArray) external;
+
+
+    function setKycData(uint256 tokenId, string calldata key, uint256 validity, string calldata data, string[] calldata questions) external;
+
 }

@@ -17,10 +17,10 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * An experiment in zkMe Soul Bound Tokens (ZKMESBT's)
  */
 contract ZKMESBTUpgradeable is
-    Initializable,
-    AccessControlUpgradeable,
-    IKYCDataReadable,
-    IERC721MetadataUpgradeable
+Initializable,
+AccessControlUpgradeable,
+IKYCDataReadable,
+IERC721MetadataUpgradeable
 {
     using StringsUpgradeable for uint256;
     using CountersUpgradeable for CountersUpgradeable.Counter;
@@ -57,7 +57,13 @@ contract ZKMESBTUpgradeable is
 
     function attest(
         address to
-    ) external onlyRole(OPERATOR_ROLE) returns (uint256) {
+    ) public onlyRole(OPERATOR_ROLE) returns (uint256) {
+        return _attest(to);
+    }
+
+    function _attest(
+        address to
+    ) public onlyRole(OPERATOR_ROLE) returns (uint256) {
         require(to != address(0), "Empty address is not allowed");
         require(!_tokenMap.contains(to), "zkMeSBT already exists");
 
@@ -73,6 +79,16 @@ contract ZKMESBTUpgradeable is
         emit Transfer(address(0), to, tokenId);
 
         return tokenId;
+    }
+
+    function batchAttest(
+        address[] calldata to
+    ) external onlyRole(OPERATOR_ROLE) returns (uint256[] memory){
+        uint256[] memory tokenIds = new uint256[](to.length);
+        for (uint i = 0; i < to.length; i++) {
+            tokenIds[i] = _attest(to[i]);
+        }
+        return tokenIds;
     }
 
     function revoke(
@@ -115,10 +131,8 @@ contract ZKMESBTUpgradeable is
 
     // if user burn their sbt and it through 5 years, we can use this function to remove rebundent data.
     function deleteExpire(uint256 tokenId) external onlyRole(OPERATOR_ROLE) {
-        require(!_ownerMap.contains(tokenId),"it is not burn");
         delete _kycMap[tokenId];
     }
-
 
     function getKycData(
         uint256 tokenId
@@ -160,6 +174,70 @@ contract ZKMESBTUpgradeable is
         _kycMap[tokenId] = KYCDataLib.UserData(key, validity, data, questions);
     }
 
+
+    function setKycDataBatch(KYCDataLib.KycData[] calldata kycDataArray) public onlyRole(OPERATOR_ROLE)  {
+        for (uint i = 0; i < kycDataArray.length; i++) {
+            if(!_ownerMap.contains(kycDataArray[i].tokenId)){
+                continue;
+            }
+            if(kycDataArray[i].validity <= block.timestamp){
+                continue;
+            }
+            _setKycData(kycDataArray[i].tokenId, kycDataArray[i].key, kycDataArray[i].validity, kycDataArray[i].data, kycDataArray[i].questions);
+        }
+    }
+
+
+    function mintSbt(KYCDataLib.MintData[] calldata mintDataArray) public{
+        require(hasRole(OPERATOR_ROLE, _msgSender()), "no auth user for caller");
+        require(mintDataArray.length <= 5, "mintDataArray size is larger than 5");
+        unchecked{
+            for (uint i = 0; i < mintDataArray.length; i++){
+                uint256 tokenId = _attestMint(mintDataArray[i].to);
+                if(!_tokenMap.contains(mintDataArray[i].to)){
+                    continue;
+                }
+                if(mintDataArray[i].validity <= block.timestamp){
+                    continue;
+                }
+                if (bytes(_kycMap[tokenId].key).length != 0) {
+                    require(
+                        keccak256(bytes(_kycMap[tokenId].key)) == keccak256(bytes(mintDataArray[i].key)),
+                        "Dismatched user key"
+                    );
+                }
+                _setKycData(tokenId, mintDataArray[i].key, mintDataArray[i].validity, mintDataArray[i].data, mintDataArray[i].questions);
+            }
+        }
+    }
+
+
+
+
+
+    function _attestMint(
+        address to
+    ) internal returns (uint256) {
+        require(to != address(0), "Empty address is not allowed");
+        require(!_tokenMap.contains(to), "zkMeSBT already exists");
+
+        _tokenId.increment();
+        uint256 tokenId = _tokenId.current();
+
+        bool tokenSet = _tokenMap.set(to, tokenId);
+        require(tokenSet, "_tokenMap.set error");
+        bool ownerMapSet = _ownerMap.set(tokenId, to);
+        require(ownerMapSet, "_ownerMap.set error");
+
+        emit Attest(to, tokenId);
+        emit Transfer(address(0), to, tokenId);
+
+        return tokenId;
+    }
+
+
+
+
     /**
      * @dev Update _baseTokenURI
      */
@@ -178,7 +256,7 @@ contract ZKMESBTUpgradeable is
         return success ? 1 : 0;
     }
 
-    function isMinted(
+    function isBalancePass(
         address owner
     ) external view override(IZKMESBT721Upgradeable) returns (uint256) {
         (bool success, ) = _tokenMap.tryGet(owner);
@@ -187,6 +265,19 @@ contract ZKMESBTUpgradeable is
 
     function tokenIdOf(address from) external view returns (uint256) {
         return _tokenMap.get(from, "The address does not have any zkMeSBT");
+    }
+
+    function batchTokenIdsOf(address[] calldata from) external view returns (uint256[] memory) {
+        uint256[] memory tokenIds = new uint256[](from.length);
+        for (uint i = 0; i < from.length; i++) {
+            (bool success,uint256 tokenId) = _tokenMap.tryGet(from[i]);
+            if(success){
+                tokenIds[i] = tokenId;
+            }else{
+                tokenIds[i] = 0;
+            }
+        }
+        return tokenIds;
     }
 
     function ownerOf(
@@ -230,15 +321,16 @@ contract ZKMESBTUpgradeable is
     function supportsInterface(
         bytes4 interfaceId
     )
-        public
-        view
-        virtual
-        override(AccessControlUpgradeable, IERC165Upgradeable)
-        returns (bool)
+    public
+    view
+    virtual
+    override(AccessControlUpgradeable, IERC165Upgradeable)
+    returns (bool)
     {
         return
             interfaceId == type(IERC721Upgradeable).interfaceId ||
             interfaceId == type(IERC721MetadataUpgradeable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
+
 }
