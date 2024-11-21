@@ -54,14 +54,14 @@ contract ZKMEVerifyUpgradeable is
     function updateSbtContract(
         address contract_
     ) external onlyRole(OPERATOR_ROLE) {
-        require(contract_ != address(0),"sbt_contract_ can not be 0");
+        require(contract_ != address(0),"contract_ can not be 0");
         _sbt_contract = contract_;
     }
 
     function updateConfContract(
         address contract_
     ) external onlyRole(OPERATOR_ROLE) {
-        require(contract_ != address(0),"conf_contract_ can not be 0");
+        require(contract_ != address(0),"contract_ can not be 0");
         _conf_contract = contract_;
     }
 
@@ -128,8 +128,8 @@ contract ZKMEVerifyUpgradeable is
     function revoke(address cooperator, uint256 tokenId) external {
         require(
             IZKMESBT721Upgradeable(_sbt_contract).ownerOf(tokenId) ==
-            _msgSender() ||
-            isOperator(_msgSender()),
+                _msgSender() ||
+                isOperator(_msgSender()),
             "The invoker does not have the sbt"
         );
 
@@ -222,10 +222,10 @@ contract ZKMEVerifyUpgradeable is
         address cooperator,
         address user
     )
-    external
-    view
-    onlyRole(OPERATOR_ROLE)
-    returns (KYCDataLib.UserData memory)
+        external
+        view
+        onlyRole(OPERATOR_ROLE)
+        returns (KYCDataLib.UserData memory)
     {
         uint256 tokenId = _getUserTokenId(cooperator, user);
 
@@ -238,10 +238,10 @@ contract ZKMEVerifyUpgradeable is
         address party,
         address user
     )
-    public
-    view
-    onlyRole(INSPECTOR_ROLE)
-    returns (KYCDataLib.UserData memory)
+        public
+        view
+        onlyRole(INSPECTOR_ROLE)
+        returns (KYCDataLib.UserData memory)
     {
         uint256 tokenId = _getUserTokenId(party, user);
 
@@ -266,10 +266,10 @@ contract ZKMEVerifyUpgradeable is
     }
 
     function getApprovedLength()
-    public
-    view
-    onlyRole(COOPERATOR_ROLE)
-    returns (uint256)
+        public
+        view
+        onlyRole(COOPERATOR_ROLE)
+        returns (uint256)
     {
         return _getApprovedLength(_msgSender());
     }

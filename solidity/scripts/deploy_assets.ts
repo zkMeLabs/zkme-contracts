@@ -1,8 +1,8 @@
 import { ethers, upgrades } from 'hardhat';
 
 async function main() {
-  const signers = await ethers.getSigners();
-  const addr = await signers[0].getAddress();
+  const [owner, alice] = await ethers.getSigners();
+  const addr = await owner.getAddress();
   console.log(`deployer address: ${addr}`);
 
   const SBT = await ethers.getContractFactory('ZKMESBTUpgradeable');
@@ -30,6 +30,18 @@ async function main() {
   );
   await conf.deployed();
   console.log('CONF:', conf.address);
+
+  const CROSSCHAIN = await ethers.getContractFactory('ZKMECrossChainUpgradeable');
+  const crosschain = await upgrades.deployProxy(
+    CROSSCHAIN,
+    [
+      addr,
+      sbt.address
+    ],
+    { initializer: 'initialize' }
+  );
+  await crosschain.deployed();
+  console.log('CROSSCHAIN:', crosschain.address);
 
   const ZKMEVerify = await ethers.getContractFactory('ZKMEVerifyUpgradeable');
   const zkmev = await upgrades.deployProxy(

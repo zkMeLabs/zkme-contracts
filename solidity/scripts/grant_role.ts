@@ -2,91 +2,30 @@ import { ethers, network } from 'hardhat';
 
 let ZKBT_CONTRACT: string;
 let ZKCONF_CONTRACT: string;
+let ZKCROSSCHAIN_CONTRACT: string;
 let ZKVERIFY_CONTRACT: string;
 let ZKVERIFY_LITE_CONTRACT: string;
 let ZKBT_CONTRACT_SSI: string;
 
-if (network.name == "zeta") {
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-  ZKVERIFY_LITE_CONTRACT = "";
-} else if (network.name == "goerli") {
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-  ZKVERIFY_LITE_CONTRACT = "";
-} else if (network.name == "tbnb") {
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-  ZKVERIFY_LITE_CONTRACT = "";
-} else if (network.name == "sepolia") {
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-  ZKVERIFY_LITE_CONTRACT = "";
-} else if (network.name == "mantle") {
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-  ZKVERIFY_LITE_CONTRACT = "";
-} else if (network.name == "base") {
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-  ZKVERIFY_LITE_CONTRACT = "";
-} else if (network.name == "fantom") {
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-  ZKVERIFY_LITE_CONTRACT = "";
-} else if (network.name == "optimism") {
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-  ZKVERIFY_LITE_CONTRACT = "";
-} else if (network.name == "arbitrum") {
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-  ZKVERIFY_LITE_CONTRACT = "";
-} else if (network.name == "avax_fuji") {
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-  ZKVERIFY_LITE_CONTRACT = "";
-} else if (network.name == "scroll_alpha_test") {
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-  ZKVERIFY_LITE_CONTRACT = "";
-} else if (network.name == "scroll_sepolia_test") {
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-} else if (network.name == "linea") {
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-  ZKVERIFY_LITE_CONTRACT = "";
-} else if (network.name == "mumbai") {
-  ZKBT_CONTRACT_SSI = "";
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-  ZKVERIFY_LITE_CONTRACT = "";
-} else if (network.name == "manta_test") {
-  ZKBT_CONTRACT = "";
-  ZKCONF_CONTRACT = "";
-  ZKVERIFY_CONTRACT = "";
-  ZKVERIFY_LITE_CONTRACT = "";
+if (network.name == "local_test") {
+  ZKBT_CONTRACT = "0x471C8fA5ff9050CB5c32C75527d24499B2E8E6fA";
+  ZKCONF_CONTRACT = "0x0F3768E5375476d0211499d20F8e8c7Ba30A58F2";
+  ZKCROSSCHAIN_CONTRACT = "0xFDFD3dA47fea67A08931800a1cCdcf2370c2E037";
+  ZKVERIFY_CONTRACT = "0x58AFC4B26ACBC7d21298e817ABbFf37Ef621E362";
+  ZKVERIFY_LITE_CONTRACT = "0x342f8DdBe0016c2CAEA271BdcB22F5065adf4e0C";
+} else if (network.name == "bsc_test") {
+  ZKBT_CONTRACT = "0xB487613D371077649E476EedDe8c23E330f01fBC";
+  ZKCONF_CONTRACT = "0xfDB3E43553953F91C623fF4702Bc728B7EF8B6EF";
+  ZKCROSSCHAIN_CONTRACT = "0x51ffde79b636EE0af7330d08bFa8b7e876A992dF";
+  ZKVERIFY_CONTRACT = "0x05766EE16ca0495CFb0Ff9FC6fB35a765fc9fCaD";
+  ZKVERIFY_LITE_CONTRACT = "0xA018F0593C1C3F62A68c3fc3B9D593961B207d96";
 } else {
   console.log(`Invalid network: ${network.name}`);
   process.exit(-1);
 }
 
 const OPERATORS: string[] = [
+  "0x1a9bb9eA94f4529C621a67e47F28689E639627b6",
 ];
 
 const OPERATOR_ROLE = "0x97667070c54ef182b0f5858b034beac1b6f3089aa2d3188bb1e8929f4fa9b929";

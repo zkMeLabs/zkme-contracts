@@ -17,10 +17,10 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  * An experiment in zkMe Soul Bound Tokens (ZKMESBT's)
  */
 contract ZKMESBTUpgradeable is
-Initializable,
-AccessControlUpgradeable,
-IKYCDataReadable,
-IERC721MetadataUpgradeable
+    Initializable,
+    AccessControlUpgradeable,
+    IKYCDataReadable,
+    IERC721MetadataUpgradeable
 {
     using StringsUpgradeable for uint256;
     using CountersUpgradeable for CountersUpgradeable.Counter;
@@ -40,6 +40,7 @@ IERC721MetadataUpgradeable
 
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
+    // fallback() external payable {}
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
      */
@@ -83,7 +84,7 @@ IERC721MetadataUpgradeable
 
     function batchAttest(
         address[] calldata to
-    ) external onlyRole(OPERATOR_ROLE) returns (uint256[] memory){
+    ) external onlyRole(OPERATOR_ROLE) returns (uint256[] memory) {
         uint256[] memory tokenIds = new uint256[](to.length);
         for (uint i = 0; i < to.length; i++) {
             tokenIds[i] = _attest(to[i]);
@@ -113,7 +114,10 @@ IERC721MetadataUpgradeable
     // we do not delete and remove data right here, since we need store data for 5 years and delete them manually
     function burn(uint256 tokenId) external {
         address sender = _msgSender();
-        require(_ownerOf(tokenId)==sender, "The account must be owner itself");
+        require(
+            _ownerOf(tokenId) == sender,
+            "The account must be owner itself"
+        );
 
         require(
             _tokenMap.contains(sender),
@@ -122,7 +126,7 @@ IERC721MetadataUpgradeable
 
         bool tokenRemove = _tokenMap.remove(sender);
         require(tokenRemove, "_tokenMap.remove error");
-        bool ownerRemove  = _ownerMap.remove(tokenId);
+        bool ownerRemove = _ownerMap.remove(tokenId);
         require(ownerRemove, "_ownerMap.remove error");
 
         emit Burn(sender, tokenId);
@@ -174,50 +178,60 @@ IERC721MetadataUpgradeable
         _kycMap[tokenId] = KYCDataLib.UserData(key, validity, data, questions);
     }
 
-
-    function setKycDataBatch(KYCDataLib.KycData[] calldata kycDataArray) public onlyRole(OPERATOR_ROLE)  {
+    function setKycDataBatch(
+        KYCDataLib.KycData[] calldata kycDataArray
+    ) public onlyRole(OPERATOR_ROLE) {
         for (uint i = 0; i < kycDataArray.length; i++) {
-            if(!_ownerMap.contains(kycDataArray[i].tokenId)){
+            if (!_ownerMap.contains(kycDataArray[i].tokenId)) {
                 continue;
             }
-            if(kycDataArray[i].validity <= block.timestamp){
+            if (kycDataArray[i].validity <= block.timestamp) {
                 continue;
             }
-            _setKycData(kycDataArray[i].tokenId, kycDataArray[i].key, kycDataArray[i].validity, kycDataArray[i].data, kycDataArray[i].questions);
+            _setKycData(
+                kycDataArray[i].tokenId,
+                kycDataArray[i].key,
+                kycDataArray[i].validity,
+                kycDataArray[i].data,
+                kycDataArray[i].questions
+            );
         }
     }
 
-
-    function mintSbt(KYCDataLib.MintData[] calldata mintDataArray) public{
-        require(hasRole(OPERATOR_ROLE, _msgSender()), "no auth user for caller");
-        require(mintDataArray.length <= 5, "mintDataArray size is larger than 5");
-        unchecked{
-            for (uint i = 0; i < mintDataArray.length; i++){
+    function mintSbt(KYCDataLib.MintData[] calldata mintDataArray) public {
+        require(hasRole(OPERATOR_ROLE, _msgSender()), "no auth for caller");
+        require(
+            mintDataArray.length <= 5,
+            "mintDataArray size is larger than 5"
+        );
+        unchecked {
+            for (uint i = 0; i < mintDataArray.length; i++) {
                 uint256 tokenId = _attestMint(mintDataArray[i].to);
-                if(!_tokenMap.contains(mintDataArray[i].to)){
+                if (!_tokenMap.contains(mintDataArray[i].to)) {
                     continue;
                 }
-                if(mintDataArray[i].validity <= block.timestamp){
+                if (mintDataArray[i].validity <= block.timestamp) {
                     continue;
                 }
                 if (bytes(_kycMap[tokenId].key).length != 0) {
                     require(
-                        keccak256(bytes(_kycMap[tokenId].key)) == keccak256(bytes(mintDataArray[i].key)),
+                        keccak256(bytes(_kycMap[tokenId].key)) ==
+                            keccak256(bytes(mintDataArray[i].key)),
                         "Dismatched user key"
                     );
                 }
-                _setKycData(tokenId, mintDataArray[i].key, mintDataArray[i].validity, mintDataArray[i].data, mintDataArray[i].questions);
+                _setKycData(
+                    tokenId,
+                    mintDataArray[i].key,
+                    mintDataArray[i].validity,
+                    mintDataArray[i].data,
+                    mintDataArray[i].questions
+                );
             }
         }
     }
 
-
-
-
-
-    function _attestMint(
-        address to
-    ) internal returns (uint256) {
+    function _attestMint(address to) internal returns (uint256) {
         require(to != address(0), "Empty address is not allowed");
         require(!_tokenMap.contains(to), "zkMeSBT already exists");
 
@@ -234,9 +248,6 @@ IERC721MetadataUpgradeable
 
         return tokenId;
     }
-
-
-
 
     /**
      * @dev Update _baseTokenURI
@@ -267,13 +278,15 @@ IERC721MetadataUpgradeable
         return _tokenMap.get(from, "The address does not have any zkMeSBT");
     }
 
-    function batchTokenIdsOf(address[] calldata from) external view returns (uint256[] memory) {
+    function batchTokenIdsOf(
+        address[] calldata from
+    ) external view returns (uint256[] memory) {
         uint256[] memory tokenIds = new uint256[](from.length);
         for (uint i = 0; i < from.length; i++) {
-            (bool success,uint256 tokenId) = _tokenMap.tryGet(from[i]);
-            if(success){
+            (bool success, uint256 tokenId) = _tokenMap.tryGet(from[i]);
+            if (success) {
                 tokenIds[i] = tokenId;
-            }else{
+            } else {
                 tokenIds[i] = 0;
             }
         }
@@ -286,9 +299,7 @@ IERC721MetadataUpgradeable
         return _ownerMap.get(tokenId, "Invalid tokenId");
     }
 
-    function _ownerOf(
-        uint256 tokenId
-    ) public view returns (address) {
+    function _ownerOf(uint256 tokenId) public view returns (address) {
         return _ownerMap.get(tokenId, "Invalid tokenId");
     }
 
@@ -321,16 +332,15 @@ IERC721MetadataUpgradeable
     function supportsInterface(
         bytes4 interfaceId
     )
-    public
-    view
-    virtual
-    override(AccessControlUpgradeable, IERC165Upgradeable)
-    returns (bool)
+        public
+        view
+        virtual
+        override(AccessControlUpgradeable, IERC165Upgradeable)
+        returns (bool)
     {
         return
             interfaceId == type(IERC721Upgradeable).interfaceId ||
             interfaceId == type(IERC721MetadataUpgradeable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
-
 }

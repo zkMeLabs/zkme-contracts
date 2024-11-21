@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "../KycData/KYCDataLib.sol";
-
 interface IZKMESBT721Upgradeable {
     /**
      * @dev This emits when a new token is created and bound to an account by
@@ -34,10 +32,7 @@ interface IZKMESBT721Upgradeable {
         uint256 indexed tokenId
     );
 
-
-    event MintSingleSbt(
-        address indexed to
-    );
+    event MintSingleSbt(address indexed to);
 
     /**
      * @dev Mints SBT
@@ -113,11 +108,4 @@ interface IZKMESBT721Upgradeable {
      * @dev Returns the amount of tokens in existence.
      */
     function totalSupply() external view returns (uint256);
-
-
-    function mintSbt(KYCDataLib.MintData[] calldata mintDataArray) external;
-
-
-    function setKycData(uint256 tokenId, string calldata key, uint256 validity, string calldata data, string[] calldata questions) external;
-
 }

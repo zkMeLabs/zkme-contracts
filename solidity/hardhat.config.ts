@@ -24,6 +24,15 @@ const config: HardhatUserConfig = {
     // outputFile: "gas-report.txt",
     // noColors: true,
   },
+  etherscan: {
+    apiKey: {
+      base: "9UNPGM6FSTKPWGYYQ5CTP8988JWKCWY3DE",
+      polygon: "33P99CG8PA21CZN4FTVY2IMGNFTIWB25FD",
+      bsc: "QVV2TMSC84Z8YZKMVNSI9EHTV28N91W4MU",
+      arbitrumOne: "W78ASX3MAZQGZPSAEA23S9QQ1163HE1DW3",
+      bscTestnet: "QVV2TMSC84Z8YZKMVNSI9EHTV28N91W4MU"
+    }
+  },
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
@@ -36,65 +45,13 @@ const config: HardhatUserConfig = {
       loggingEnabled: true,
       allowUnlimitedContractSize: false,
     },
-    mumbai: {
-      url: process.env.MUMBAI_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
+    local_test: {
+      url: "https://testnet-rpc.mechain.tech:443",
+      accounts: ["0xxxxxxx"],
     },
-    goerli: {
-      url: process.env.GOERLI_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
-    },
-    sepolia: {
-      url: process.env.SEPOLIA_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
-    },
-    tbnb: {
-      url: process.env.BSC_TESTNET_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
-    },
-    zeta: {
-      url: process.env.ZETA_ATHENS3_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
-    },
-    mantle: {
-      url: process.env.MANTLE_TESTNET_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
-    },
-    base: {
-      url: process.env.BASE_TESTNET_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
-    },
-    fantom: {
-      url: process.env.FANTOM_TESTNET_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
-    },
-    optimism: {
-      url: process.env.OPTIMISM_TESTNET_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
-    },
-    arbitrum: {
-      url: process.env.ARBITRUM_TESTNET_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
-    },
-    avax_fuji: {
-      url: process.env.AVAX_FUJI_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
-    },
-    scroll_alpha_test: {
-      url: process.env.SCROLL_ALPHA_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
-    },
-    scroll_sepolia_test: {
-      url: process.env.SCROLL_SEPOLIA_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
-    },
-    linea: {
-      url: process.env.LINEA_TESTNET_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
-    },
-    manta_test: {
-      url: process.env.MANTA_TEST_RPC,
-      accounts: [process.env.DEPLOY_SECRET!],
+    bsc_test: {
+      url: "https://data-seed-prebsc-1-s3.bnbchain.org:8545",
+      accounts: ["0xxxxxxx"],
     }
   },
   paths: {
