@@ -40,7 +40,6 @@ async function main() {
 
   const user = ethers.Wallet.createRandom().address;
   let result = await crosschain.getCrossChainStatus(destChainId, user);
-  console.log(`user ${user} getCrossChainStatus ${result}`);
 
   let tx = await zkbt.attest(user);
   await tx.wait();
@@ -64,13 +63,17 @@ async function main() {
       gasPrice
     });
     await tx.wait();
+    console.log(`Send txs to ${network.name} success, hash: ${tx.hash}`);
   } catch (error) {
     console.error('Error calling forward:', error);
   }
 
+  // 0: init, 1: processing, 3: cross-chain success
+  result = await crosschain.getCrossChainStatus(destChainId, user);
+  console.log(`waiting for status to be 3(cross-chain success), current status: ${result}`);
   for (let i = 0; i < 10; i++) {
     result = await crosschain.getCrossChainStatus(destChainId, user);
-    console.log(`user ${user} getCrossChainStatus ${result}`);
+    console.log(`data ${user} status: ${result}`);
     if (result === 3) {
       break;
     }
