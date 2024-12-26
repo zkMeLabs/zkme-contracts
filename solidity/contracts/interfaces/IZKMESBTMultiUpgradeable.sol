@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import "../KycData/KYCDataLib.sol";
 
-interface IZKMESBT721Upgradeable {
+interface IZKMESBTMultiUpgradeable {
     /**
      * @dev This emits when a new token is created and bound to an account by
      * any mechanism.
@@ -24,6 +24,8 @@ interface IZKMESBT721Upgradeable {
      * @dev This emits when an existing SBT is burned by an account
      */
     event Burn(address indexed from, uint256 indexed tokenId);
+
+    event ErrorHandle(bytes indexed err);
 
     /**
      * @dev Emitted when `tokenId` token is transferred from `from` to `to`.
@@ -51,7 +53,7 @@ interface IZKMESBT721Upgradeable {
      * Emits a {Transfer} event.
      * @return The tokenId of the minted SBT
      */
-    function attest(address to) external returns (uint256);
+    function attest(address to,uint256 category) external returns (uint256);
 
     /**
      * @dev Revokes SBT
@@ -92,13 +94,13 @@ interface IZKMESBT721Upgradeable {
      * @param owner An address for whom to query the balance
      * @return The number of SBTs owned by `owner`, possibly zero
      */
-    function isBalancePass(address owner) external view returns (uint256);
+    function isBalancePass(address owner, uint256 category) external view returns (uint256);
 
     /**
      * @param from The address of the SBT owner
      * @return The tokenId of the owner's SBT, and throw an error if there is no SBT belongs to the given address
      */
-    function tokenIdOf(address from) external view returns (uint256);
+    function tokenIdOf(address from,uint256 category) external view returns (uint256);
 
     /**
      * @notice Find the address bound to a SBT
@@ -114,16 +116,5 @@ interface IZKMESBT721Upgradeable {
      */
     function totalSupply() external view returns (uint256);
 
-    /**
-    * @dev combined attest and set data for batch user
-     * in order to improve the speed of mint
-     */
-
-    function mintSbt(KYCDataLib.MintData[] calldata mintDataArray) external;
-
-    /**
-    * @dev set kyc data of a single user
-     */
-    function setKycData(uint256 tokenId, string calldata key, uint256 validity, string calldata data, string[] calldata questions) external;
-
+    function getSbtData(uint256 tokenId) external view returns (KYCDataLib.UserMultiData memory);
 }

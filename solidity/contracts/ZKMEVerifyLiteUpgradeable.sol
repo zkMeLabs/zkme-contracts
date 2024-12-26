@@ -13,6 +13,11 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
+    /**
+     * @dev standard version of ZkMe contract
+     *  to get to know user's data by cooperator and their key and authorize user
+     */
+
 contract ZKMEVerifyLiteUpgradeable is
 Initializable,
 AccessControlUpgradeable,
@@ -36,7 +41,10 @@ IZKMEVerifyLiteUpgradeable
     }
 
 
-
+    /**
+     * @dev standard version of ZkMe contract
+     *   authorize user with cooperator
+     */
     function approveLite(
         address cooperator,
         string memory cooperatorThresholdKey
@@ -49,13 +57,21 @@ IZKMEVerifyLiteUpgradeable
         emit ApproveLite(cooperator);
     }
 
-
+    /**
+     * @dev standard version of ZkMe contract
+     *   judge user if authorize user with cooperator
+     */
     function hasApproved(
         address cooperator,
         address userId
     ) public view returns (bool) {
         return  _approveMap[cooperator].contains(userId);
     }
+
+    /**
+    * @dev standard version of ZkMe contract
+     *   get user data with cooperator
+     */
 
     function getUserData(
         address cooperator

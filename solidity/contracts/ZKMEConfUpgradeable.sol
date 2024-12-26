@@ -6,6 +6,10 @@ import "./interfaces/IZKMEConfUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
+/**
+  * @dev conf of ZkMe contract
+     *  for cooperator to configure their own problem set and something else
+     */
 contract ZKMEConfUpgradeable is
     Initializable,
     AccessControlUpgradeable,
@@ -30,6 +34,11 @@ contract ZKMEConfUpgradeable is
         return hasRole(OPERATOR_ROLE, account);
     }
 
+    /**
+  * @dev conf of ZkMe contract
+     *  cooperator set their own problem set.
+     */
+
     function setQuestions(
         address cooperator,
         string[] memory questions
@@ -41,6 +50,10 @@ contract ZKMEConfUpgradeable is
         emit SetQuestion(cooperator);
     }
 
+    /**
+    * @dev conf of ZkMe contract
+     *  cooperator get their problem set.
+     */
     function getQuestions(
         address cooperator
     ) external view returns (string[] memory) {

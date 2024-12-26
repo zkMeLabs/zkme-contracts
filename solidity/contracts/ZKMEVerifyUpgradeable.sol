@@ -14,16 +14,16 @@ import "@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeab
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract ZKMEVerifyUpgradeable is
-    Initializable,
-    AccessControlUpgradeable,
-    IZKMEVerifyUpgradeable,
-    IZKMEApprove
+Initializable,
+AccessControlUpgradeable,
+IZKMEVerifyUpgradeable,
+IZKMEApprove
 {
     using EnumerableSetUpgradeable for EnumerableSetUpgradeable.UintSet;
 
     mapping(address => mapping(address => uint256)) private _puMap;
     mapping(address => mapping(uint256 => KYCDataLib.UserData))
-        private _kycDataMap;
+    private _kycDataMap;
     mapping(address => EnumerableSetUpgradeable.UintSet) private _approveMap;
 
     address private _sbt_contract;
@@ -51,12 +51,22 @@ contract ZKMEVerifyUpgradeable is
         _grantRole(INSPECTOR_ROLE, admin_);
     }
 
+    /**
+     * @dev verify of ZkMe contract
+     *  update coordinate sbt contract
+     */
+
     function updateSbtContract(
         address contract_
     ) external onlyRole(OPERATOR_ROLE) {
         require(contract_ != address(0),"sbt_contract_ can not be 0");
         _sbt_contract = contract_;
     }
+
+    /**
+     * @dev verify of ZkMe contract
+     *  update coordinate conf contract
+     */
 
     function updateConfContract(
         address contract_
@@ -65,12 +75,21 @@ contract ZKMEVerifyUpgradeable is
         _conf_contract = contract_;
     }
 
+    /**
+     * @dev verify of ZkMe contract
+     *  grant role of operator
+     */
     function grantOperator(
         address operator
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRole(OPERATOR_ROLE, operator);
         emit Grant(operator, OPERATOR_GRANT);
     }
+
+    /**
+     * @dev verify of ZkMe contract
+     *  grant role of cooperator
+     */
 
     function grantCooperator(
         address cooperator
@@ -79,12 +98,22 @@ contract ZKMEVerifyUpgradeable is
         emit Grant(cooperator, COOPERATOR_GRANT);
     }
 
+    /**
+     * @dev verify of ZkMe contract
+     *  grant role of inspector
+     */
+
     function grantInspector(
         address inspector
     ) external onlyRole(OPERATOR_ROLE) {
         _grantRole(INSPECTOR_ROLE, inspector);
         emit Grant(inspector, INSPECTOR_GRANT);
     }
+
+    /**
+     * @dev verify of ZkMe contract
+     *  judge caller's role
+     */
 
     function isOperator(address account) public view returns (bool) {
         return hasRole(OPERATOR_ROLE, account);
@@ -97,6 +126,11 @@ contract ZKMEVerifyUpgradeable is
     function isInspector(address account) external view returns (bool) {
         return hasRole(INSPECTOR_ROLE, account);
     }
+
+    /**
+     * @dev verify of ZkMe contract
+     *  authorize user to cooperator
+     */
 
     function approve(
         address cooperator,
@@ -124,6 +158,10 @@ contract ZKMEVerifyUpgradeable is
         emit Approve(cooperator, tokenId);
     }
 
+    /**
+     * @dev verify of ZkMe contract
+     *  revoke user to cooperator
+     */
     // we do not delete and remove data right here, since we need store data for 5 years and delete them manually
     function revoke(address cooperator, uint256 tokenId) external {
         require(
@@ -138,6 +176,11 @@ contract ZKMEVerifyUpgradeable is
 
         emit Revoke(cooperator, tokenId);
     }
+
+    /**
+     * @dev verify of ZkMe contract
+     *  matching user's question with  cooperator's question to judge their status
+     */
 
     function _matching(
         string[] memory project,
@@ -161,6 +204,12 @@ contract ZKMEVerifyUpgradeable is
         return true;
     }
 
+    /**
+     * @dev verify of ZkMe contract
+     *  verify user by cooperator's regulation
+     */
+
+
     function verify(
         address cooperator,
         address user
@@ -181,6 +230,11 @@ contract ZKMEVerifyUpgradeable is
         return _matching(project, userData.questions);
     }
 
+    /**
+     * @dev verify of ZkMe contract
+     *  to get to know if user has authorized by cooperator
+     */
+
     function hasApproved(
         address cooperator,
         address user
@@ -189,6 +243,10 @@ contract ZKMEVerifyUpgradeable is
         return tokenId != 0 && _approveMap[cooperator].contains(tokenId);
     }
 
+    /**
+     * @dev verify of ZkMe contract
+     *  to get to know user's tokenId if they have authorized
+     */
     function getUserTokenId(
         address user
     ) external view onlyRole(COOPERATOR_ROLE) returns (uint256) {
@@ -198,6 +256,10 @@ contract ZKMEVerifyUpgradeable is
                 : 0;
     }
 
+    /**
+     * @dev verify of ZkMe contract
+     *  to get to know user's tokenId for operator
+     */
     function getUserTokenIdForOperator(
         address cooperator,
         address user
@@ -205,6 +267,10 @@ contract ZKMEVerifyUpgradeable is
         return _getUserTokenId(cooperator, user);
     }
 
+    /**
+     * @dev verify of ZkMe contract
+     *  to get to know user's data by cooperator and their key
+     */
     function getUserData(
         address user
     ) external view returns (KYCDataLib.UserData memory) {
@@ -218,6 +284,10 @@ contract ZKMEVerifyUpgradeable is
         return _getUserKycData(_msgSender(), tokenId);
     }
 
+    /**
+     * @dev verify of ZkMe contract
+     *  to get to know user's data by cooperator and their key
+     */
     function getUserDataForOperator(
         address cooperator,
         address user
@@ -249,6 +319,10 @@ contract ZKMEVerifyUpgradeable is
 
         return _getUserKycData(party, tokenId);
     }
+    /**
+     * @dev verify of ZkMe contract
+     *  to get to know cooperator's token by page
+     */
 
     function getApprovedTokenId(
         uint256 start,

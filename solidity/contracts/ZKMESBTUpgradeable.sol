@@ -55,6 +55,11 @@ IERC721MetadataUpgradeable
         _grantRole(OPERATOR_ROLE, admin_);
     }
 
+    /**
+    * @dev attest of ZkMe contract
+     *   attest user with sbt
+     */
+
     function attest(
         address to
     ) public onlyRole(OPERATOR_ROLE) returns (uint256) {
@@ -80,7 +85,10 @@ IERC721MetadataUpgradeable
 
         return tokenId;
     }
-
+    /**
+    * @dev attest of ZkMe contract
+     *   batch attest users with sbts
+     */
     function batchAttest(
         address[] calldata to
     ) external onlyRole(OPERATOR_ROLE) returns (uint256[] memory){
@@ -91,6 +99,10 @@ IERC721MetadataUpgradeable
         return tokenIds;
     }
 
+    /**
+    * @dev attest of ZkMe contract
+     *   revoke single user's  sbts
+     */
     function revoke(
         address from,
         uint256 tokenId
@@ -134,6 +146,10 @@ IERC721MetadataUpgradeable
         delete _kycMap[tokenId];
     }
 
+    /**
+    * @dev attest of ZkMe contract
+     *   get user's sbt data
+     */
     function getKycData(
         uint256 tokenId
     ) public view returns (KYCDataLib.UserData memory) {
@@ -141,6 +157,12 @@ IERC721MetadataUpgradeable
 
         return _kycMap[tokenId];
     }
+
+    /**
+    * deprecated
+    * @dev attest of ZkMe contract
+     *   set user's sbt data
+     */
 
     function setKycData(
         uint256 tokenId,
@@ -174,6 +196,11 @@ IERC721MetadataUpgradeable
         _kycMap[tokenId] = KYCDataLib.UserData(key, validity, data, questions);
     }
 
+    /**
+   * deprecated
+   * @dev attest of ZkMe contract
+     *   batch set users sbts data
+     */
 
     function setKycDataBatch(KYCDataLib.KycData[] calldata kycDataArray) public onlyRole(OPERATOR_ROLE)  {
         for (uint i = 0; i < kycDataArray.length; i++) {
@@ -186,6 +213,12 @@ IERC721MetadataUpgradeable
             _setKycData(kycDataArray[i].tokenId, kycDataArray[i].key, kycDataArray[i].validity, kycDataArray[i].data, kycDataArray[i].questions);
         }
     }
+
+    /**
+   * @dev attest of ZkMe contract
+     *   combined attest and set data for batch user
+     * in order to improve the speed of mint
+     */
 
 
     function mintSbt(KYCDataLib.MintData[] calldata mintDataArray) public{
@@ -256,6 +289,9 @@ IERC721MetadataUpgradeable
         return success ? 1 : 0;
     }
 
+    /**
+    * @dev judge the owner's token if it is exist
+     */
     function isBalancePass(
         address owner
     ) external view override(IZKMESBT721Upgradeable) returns (uint256) {
@@ -263,9 +299,18 @@ IERC721MetadataUpgradeable
         return success ? 1 : 0;
     }
 
+    /**
+    * @dev get the owner's token id by single
+     */
+
     function tokenIdOf(address from) external view returns (uint256) {
         return _tokenMap.get(from, "The address does not have any zkMeSBT");
     }
+
+
+    /**
+    * @dev get the owner's token ids by batch
+     */
 
     function batchTokenIdsOf(address[] calldata from) external view returns (uint256[] memory) {
         uint256[] memory tokenIds = new uint256[](from.length);
@@ -280,6 +325,10 @@ IERC721MetadataUpgradeable
         return tokenIds;
     }
 
+    /**
+    * @dev judge sender if it is token's owner
+     */
+
     function ownerOf(
         uint256 tokenId
     ) external view override(IZKMESBT721Upgradeable) returns (address) {
@@ -291,7 +340,9 @@ IERC721MetadataUpgradeable
     ) public view returns (address) {
         return _ownerMap.get(tokenId, "Invalid tokenId");
     }
-
+    /**
+    * @dev get all current sbt count
+     */
     function totalSupply() external view override returns (uint256) {
         return _tokenId.current();
     }
